@@ -8,10 +8,10 @@ class HangpersonGame
   # def initialize()
   # end
   attr_accessor :word
-  attr_accessor :guesses 
+  attr_accessor :guesses
   attr_accessor :wrong_guesses
-  
-  
+
+
   def initialize(word)
     @word = word
     @guesses = ''
@@ -19,12 +19,55 @@ class HangpersonGame
   end
 
   def guess(candidate)
-    @guesses << candidate
-    if @guesses.include?(candidate)
-      return false
+    if (invalid_guess?(candidate)) || (candidate == '')
+      raise ArgumentError.new("Your guess was invalid")
+    elsif candidate == nil
+      throw :ExceptionError
+    elsif @guesses.include?(candidate.downcase) or @wrong_guesses.include?(candidate.downcase)
+      result = false
     else
-      !!(/candidate/ =~ @word)
+      if do_they_match?(@word, candidate)
+        @guesses << candidate.downcase
+        result = true
+      else
+        @wrong_guesses << candidate.downcase
+        result = true
+      end
+      return result
     end
+  end
+
+  def word_with_guesses
+    result = ''
+    @word.each_char do |letter|
+      begin
+        if @guesses.include?(letter)
+          result += letter
+        else
+          result += '-'
+        end
+      end
+    end
+    result
+  end
+
+  def check_win_or_lose
+    if @wrong_guesses.length > 6
+      return :lose
+    elsif not word_with_guesses.include?('-')
+      return :win
+    else
+      return :play
+    end
+  end
+
+  def do_they_match?(word, expression)
+    word.include?(expression)
+  end
+
+  def invalid_guess?(letter)
+    return true unless !!(/[a-zA-Z]/ =~ letter)
+    return false
   end
 
   def self.get_random_word
